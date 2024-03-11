@@ -50,7 +50,7 @@ In this section, we will:
 
 This repo uses HashiCups, a demo coffee shop application made up of several microservices running on VMs
 
-![HashiCups UI](img/hashicups-ui.png)
+![HashiCups UI](docs/img/hashicups-ui.png)
 
 The application is composed by a mix of microservices and monolith services running on four different VMs:
 
@@ -61,7 +61,7 @@ The application is composed by a mix of microservices and monolith services runn
    waiting to be migrated into microservices.
 4. `DATABASE`: a PostgreSQL instance.
 
-![00_hashicups](img/gs_vms-diagram-00.png)
+![00_hashicups](docs/img/gs_vms-diagram-00.png)
 
 ### Service Map
 
