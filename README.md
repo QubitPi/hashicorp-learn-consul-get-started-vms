@@ -1,6 +1,27 @@
 Deploying Consul on VMs
 =======================
 
+<!-- TOC -->
+* [Deploying Consul on VMs](#deploying-consul-on-vms)
+  * [Deploy Consul on VMs](#deploy-consul-on-vms)
+    * [Service Map](#service-map)
+    * [Prerequisites](#prerequisites)
+    * [Cloning GitHub Repository](#cloning-github-repository)
+    * [Infrastructure Overview](#infrastructure-overview)
+  * [Test scenarios](#test-scenarios)
+    * [Available environments](#available-environments)
+    * [Spin-up environment](#spin-up-environment)
+    * [Scenario Output](#scenario-output)
+  * [The demo application](#the-demo-application)
+  * [Scenarios](#scenarios)
+    * [01_consul](#01consul)
+    * [02_service_discovery](#02servicediscovery)
+    * [03_service_mesh](#03servicemesh)
+    * [04_service_mesh_access [DRAFT]](#04servicemeshaccess-draft)
+    * [05_service_mesh_monitoring](#05servicemeshmonitoring)
+  * [Separate scripts](#separate-scripts)
+<!-- TOC -->
+
 > [!TIP]
 >
 > For most of us, Consul is not an easy-to-pick-up compared to Hashicorp Packer or Terraform. The purpose of this repo 
