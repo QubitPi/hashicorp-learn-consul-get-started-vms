@@ -1,6 +1,142 @@
-# Scenario Provision Tool
+Deploying Consul on VMs
+=======================
 
-> **WARNING:** the script is currently under development. Some configurations might not work as expected. **Do not test on production environments.**
+> [!TIP]
+>
+> For most of us, Consul is not an easy-to-pick-up compared to Hashicorp Packer or Terraform. The purpose of this repo 
+> is to learn Consul by a mini-project with absolute zero experience with Consul before. When we complete this tutoria,
+> we should be having a pretty solid working sense of what it is and reading its documentations afterwards shall be
+> relatively easy.
+
+Consul is a service networking solution that enables us to manage secure network connectivity between services and 
+across on-premise and multi-cloud environments and runtimes. Consul offers service discovery, service mesh, traffic 
+management, and automated updates to network infrastructure device. Check out the
+[What is Consul?](https://qubitpi.github.io/hashicorp-consul/consul/docs/intro) page to learn more.
+
+In the following step-by-step instructions, we will deploy a demo application, configure it to use Consul service 
+discovery, secure it with service mesh, allow external traffic into the service mesh, and enhance observability into 
+our service mesh. During the process, we will learn how to leverage Consul to securely connect our services running on 
+any environment. Specifically, using this repo, we will learn to
+
+1. configure, deploy, and bootstrap a Consul server on a virtual machine (VM). After deploying Consul, we will interact 
+   with Consul using the UI, CLI, and API
+2. deploy Consul client agents to virtual machine (VM) workloads. Then, we will register the services to the Consul 
+   catalog and set up a distributed monitoring system using Consul health checks.
+3. zero trust security in our network by implementing Consul service mesh. This will enable secure service-to-service 
+   communication and allow us to leverage Consul's full suite of features.
+4. add a Consul API Gateway in our service mesh and secure external network access to applications and services running 
+   in our Consul service mesh
+5. configure and use Consul to observe traffic within our service mesh. This enables us to quickly understand how 
+   services interact with each other and effectively debug our services' traffic.
+6. link our on-premises Consul datacenter to HCP Consul Central, the hosted management plane service available to 
+   organizations using HCP Consul.
+
+Deploy Consul on VMs
+--------------------
+
+In this section, we will:
+
+- Deploy our VM environment on AWS EC2 using Terraform
+- Configure a Consul server
+- Start a Consul server instance
+- Configure your terminal to communicate with the Consul datacenter
+- Bootstrap Consul ACL system and create tokens for Consul management
+- Interact with Consul API, KV store and UI
+
+> [!TIP]
+> 
+> AWS service charges might apply in the following procedures. Don't worry, however, as there is a "one-click" step at
+> the end of this section that rollbacks all deployed AWS resources
+
+This repo uses HashiCups, a demo coffee shop application made up of several microservices running on VMs
+
+![HashiCups UI](img/hashicups-ui.png)
+
+The application is composed by a mix of microservices and monolith services running on four different VMs:
+
+1. `NGINX`: an NGINX server configured as reverse proxy for the application. This is the public facing part of our 
+   application.
+2. `FRONTEND`: the application frontend.
+3. `API`: the application API layer. It is composed by multiple services but all of them are running on the same host, 
+   waiting to be migrated into microservices.
+4. `DATABASE`: a PostgreSQL instance.
+
+![00_hashicups](img/gs_vms-diagram-00.png)
+
+### Service Map
+
+The table shows more details on the services structure.
+
+| Service    | PORT  | Upstream                    |
+|------------|-------|-----------------------------|
+| database   | 5432  | []                          |
+| api        | 8081  | [database]                  |
+| - payments | 8080  | []                          |
+| - product  | 9090  | *[database]                 |
+| - public   | *8081 | [api.product, api.payments] |
+| frontend   | 3000  | [api.public]                |
+| nginx      | 80    | [frontend, api.public]      |
+
+* `Service`: name of the service. In the environments names are composed using the following naming scheme:
+
+  ```
+  hashicups-<service-name>[-<sub-service-name>]
+  ```
+
+* `Port`: the port on which the service is running. The *api* meta-service is using multiple ports, one per 
+  sub-service. The one marked with a `*` is the only one that requires external access.
+* `Upstream`: represent the dependencies each service has. If one of the services mentioned in this column is not 
+  working properly, then the service will not work either.
+
+### Prerequisites
+
+In order to proceed, we will first need:
+
+- An AWS account configured for
+  [use with Terraform](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration).
+  For example, we set IAM credentials to authenticate the Terraform AWS provider as a pair of environment variables:
+
+  ```console
+  export AWS_ACCESS_KEY_ID=
+  export AWS_SECRET_ACCESS_KEY=
+  ```
+
+- [aws-cli >= 2.0](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- [terraform >= 1.0](https://qubitpi.github.io/hashicorp-terraform/terraform/install)
+- [consul >= 1.15.0](https://qubitpi.github.io/hashicorp-consul/consul/install)
+
+### Cloning GitHub Repository
+
+Clone the [GitHub repository](https://github.com/QubitPi/hashicorp-learn-consul-get-started-vms) containing the 
+configuration files and resources.
+
+```console
+git clone https://github.com/hashicorp-education/learn-consul-get-started-vms
+```
+
+Change into the directory that contains the complete configuration files:
+
+```console
+cd learn-consul-get-started-vms/self-managed/infrastructure/aws
+```
+
+### Infrastructure Overview
+
+- [ami.tf](./self-managed/infrastructure/aws/ami.tf): All of our VM's runs on Debian OS
+
+
+Deploy:
+
+```
+terraform apply --auto-approve -var-file=./conf/00_hashicups.tfvars
+```
+
+![00_hashicups](docs/img/gs_vms-diagram-00.png)
+
+* HashiCups application installed on 4 VMs
+* One empty VM ready to host Consul server
+* One *Bastion Host* VM with all tools pre-installed to interact with the environment.
+
 
 ## Test scenarios
 
@@ -103,19 +239,7 @@ Read more in the [HashiCups Demo Application](./docs/HashiCups.md) page.
 
 Here a brief description of the available scenarios.
 
-### 00_hashicups
 
-Deploy:
-
-```
-terraform apply --auto-approve -var-file=./conf/00_hashicups.tfvars
-```
-
-![00_hashicups](docs/img/gs_vms-diagram-00.png)
-
-* HashiCups application installed on 4 VMs
-* One empty VM ready to host Consul server
-* One *Bastion Host* VM with all tools pre-installed to interact with the environment.
 
 ### 01_consul
 
