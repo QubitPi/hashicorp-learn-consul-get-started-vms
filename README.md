@@ -1,8 +1,8 @@
-Deploying Consul on VMs
-=======================
+Learn HashiCorp Consul
+======================
 
 <!-- TOC -->
-* [Deploying Consul on VMs](#deploying-consul-on-vms)
+* [Learn HashiCorp Consul](#learn-hashicorp-consul)
   * [Deploy Consul on VMs](#deploy-consul-on-vms)
     * [Service Map](#service-map)
     * [Prerequisites](#prerequisites)
